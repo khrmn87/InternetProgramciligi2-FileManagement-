@@ -1,0 +1,195 @@
+﻿﻿
+
+
+<div class="row">
+    <div class="col-md-8">
+
+        <div class="card">
+            <div class="card-header"><h3>Kullanıcı Bilgileri</h3></div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <label>Adı Soyadı</label>
+                    <input type="text" id="txtFullName" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label>Kullanıcı Adı</label>
+                    <input type="text" id="txtUserName" class="form-control" readonly="readonly" />
+                </div>
+                <div class="mb-2">
+                    <label>E-Posta</label>
+                    <input type="text" id="txtEmail" class="form-control" />
+                </div>
+                <div class="mb-2">
+                    <label>Telefon</label>
+                    <input type="text" id="txtPhone" class="form-control" />
+                </div>
+                <button class="btn btn-primary" id="btnSave">Kaydet</button>
+
+            </div>
+
+        </div>
+
+
+
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header"><h3>Profil Fotoğrafı</h3></div>
+            <div class="card-body">
+                <img src="" id="userPicture" class="img-profile rounded-circle" style="width:300px" />
+                <input id="fileInput" type="file" accept="image/gif, image/jpeg, image/png" class="btn btn-primary" />
+                <div id="divResult"></div>
+
+            </div>
+        </div>
+
+
+
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+
+    <script>
+        $(document).ready(function () {
+            var token = localStorage.getItem("token");
+            if (token == "" || token == null) {
+                location.href = "/Login";
+                return false;
+            }
+
+            var ApiBaseUrl = "@ViewBag.ApiBaseUrl";
+            GetUserInfo();
+
+
+            function GetUserInfo() {
+                $.ajax({
+                    url: ApiBaseUrl + "/User/GetById/" + userId,
+                    type: "Get",
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    success: function (data) {
+                         //console.log(data);
+                        $("#userPicture").attr("src", "https://localhost:7278//Files/UserPhotos/" + data.photoUrl);
+                        $("#txtFullName").val(data.fullName);
+                        $("#txtUserName").val(data.userName);
+                        $("#txtEmail").val(data.email);
+                        $("#txtPhone").val(data.phoneNumber);
+
+                    },
+                    error: function () { }
+                });
+
+            }
+
+            $("#fileInput").change(function () {
+                var files = $(this).prop('files');
+                console.log(files);
+                if (files && files[0]) {
+                    var picExt = ".jpg";
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#userPicture').attr('src', e.target.result);
+                        UserPicUpdate(e.target.result, picExt);
+                    };
+                    reader.readAsDataURL(files[0]);
+                }
+            });
+
+            function UserPicUpdate(picData, picExt) {
+
+                var upload = new Object();
+                upload.picData = picData;
+                upload.picExt = picExt;
+                upload.userId = userId;
+
+                $.ajax({
+                    url: ApiBaseUrl + "/User/Upload/",
+                    type: "Post",
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    data: JSON.stringify(upload),
+                    success: function (data) {
+                        console.log(data);
+                        if (data.status) {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-success")
+                                .html(data.message)
+                                .fadeOut(5000);
+
+                        } else {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-danger")
+                                .html(data.message)
+                                .fadeOut(5000);
+                        }
+
+                    },
+                    error: function () { }
+                });
+            }
+
+
+            $("#btnSave").click(function () {
+                var fullName = $("#txtFullName").val();
+                var userName = $("#txtUserName").val();
+                var email = $("#txtEmail").val();
+                var phoneNumber = $("#txtPhone").val();
+
+                var register = new Object();
+                register.FullName = fullName;
+                register.UserName = userName;
+                register.Email = email;
+                register.PhoneNumber = phoneNumber;
+                register.Id = userId;
+                console.log(register);
+
+                $.ajax({
+                    url: ApiBaseUrl + "/User/Update",
+                    type: "Put",
+                    contentType: "application/json",
+                    headers: {
+                        "Authorization": "Bearer " + token
+                    },
+                    data: JSON.stringify(register),
+                    success: function (data) {
+                        console.log(data);
+                        if (data.status) {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-success")
+                                .html(data.message)
+                                .fadeOut(5000);
+
+                        } else {
+                            $("#divResult")
+                                .show()
+                                .removeClass()
+                                .addClass("alert alert-danger")
+                                .html(data.message)
+                                .fadeOut(5000);
+                        }
+
+                    },
+                    error: function () { }
+                });
+
+            });
+
+        });
+
+    </script>
+}

@@ -1,0 +1,189 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>@ViewData["Title"] - Yönetim Paneli</title>
+
+    <!-- Fonts and Styles -->
+    <link href="~/sbadmin/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,300,400,700" rel="stylesheet">
+    <link href="~/sbadmin/css/sb-admin-2.min.css" rel="stylesheet">
+
+    <style>
+        .bg-custom-dark {
+            background-color: #1f1f2e;
+        }
+
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+
+            .sidebar.toggled {
+                transition: all 0.3s ease;
+            }
+
+            .sidebar .nav-link {
+                color: #c5c6c7;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+
+                .sidebar .nav-link:hover {
+                    background-color: #343a40;
+                    color: #ffffff;
+                    border-radius: 10px;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #4e73df;
+                    color: #fff;
+                    border-radius: 10px;
+                }
+
+            .sidebar .sidebar-brand {
+                color: #ffffff;
+                font-weight: bold;
+                font-size: 1.4rem;
+                transition: all 0.3s ease;
+            }
+
+        .sidebar-divider {
+            border-top: 1px solid #c5c6c7;
+        }
+    </style>
+</head>
+
+<body id="page-top">
+
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-custom-dark sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" asp-controller="Home" asp-action="Index">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-file"></i>
+                </div>
+                <div class="sidebar-brand-text mx-2">Dosya Yönetim </div>
+            </a>
+
+            <hr class="sidebar-divider my-0">
+
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Admin">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Ana Sayfa</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Categories" asp-controller="Admin">
+                    <i class="fas fa-fw fa-list"></i>
+                    <span>Kategoriler</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Files" asp-controller="Admin">
+                    <i class="fas fa-fw fa-folder"></i>
+                    <span>Dosyalar</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="StarredFiles">
+                    <i class="fas fa-fw fa-star"></i>
+                    <span>Yıldızlı Dosyalar</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+        <!-- End of Sidebar -->
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <div id="content">
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <ul class="navbar-nav ml-auto" id="adminUserMenu">
+                        <!-- Kullanıcı bilgisi buraya yazılacak -->
+                    </ul>
+                </nav>
+
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <script src="~/sbadmin/vendor/jquery/jquery.min.js"></script>
+    <script src="~/sbadmin/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/sbadmin/vendor/jquery-easing/jquery.easing.min.js"></script>
+    <script src="~/sbadmin/js/sb-admin-2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            var token = localStorage.getItem("token");
+            var userName = localStorage.getItem("userName");
+            var userRole = localStorage.getItem("userRole");
+            var adminUserMenu = $("#adminUserMenu");
+
+            if (token && token !== "") {
+                var displayRole = (userRole === "Uye") ? "Üye" : userRole;
+                var badgeColor = (userRole === "Admin") ? "danger" : "success";
+
+                adminUserMenu.html(`
+                    <li class="nav-item dropdown no-arrow">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <span class="badge badge-${badgeColor} mr-2">${displayRole}</span>
+                            <span class="mr-2 d-none d-lg-inline text-gray-600 small">${userName}</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                            aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="#" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                Oturumu Kapat
+                            </a>
+                        </div>
+                    </li>`);
+
+                if (userRole !== "Admin") {
+                    $('a[href$="/Admin/Categories"]').closest(".nav-item").hide();
+                }
+            } else {
+                window.location.href = "/Login";
+            }
+
+            $(document).on("click", "#logoutBtn", function () {
+                localStorage.removeItem("token");
+                localStorage.removeItem("userName");
+                localStorage.removeItem("userRole");
+                window.location.href = "/Login";
+            });
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>
